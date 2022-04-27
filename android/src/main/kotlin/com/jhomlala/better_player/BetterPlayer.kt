@@ -49,8 +49,8 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import io.flutter.plugin.common.EventChannel.EventSink
 import androidx.work.Data
-import com.brasilparalelo.bplayer.drm.CustomDrmHttpDataSource
-import com.brasilparalelo.bplayer.drm.CustomDrmSessionManagerProvider
+import com.jhomlala.better_player.drm.CustomDrmHttpDataSource
+import com.jhomlala.better_player.drm.CustomDrmSessionManagerProvider
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.drm.DrmSessionManagerProvider
