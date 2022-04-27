@@ -547,7 +547,7 @@ internal class BetterPlayer(
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                eventSink.error("VideoError", "Video player had error $error", "")
+                eventSink.error("VideoError", "Video player had error ${error}", error.cause.toString())
             }
         })
         val reply: MutableMap<String, Any> = HashMap()
