@@ -12,7 +12,7 @@ class CustomDrmSessionManagerProvider(
     private var lock: Any? = Any(),
     private var manager: DrmSessionManager? = null,
     private var drmHttpDataSourceFactory: HttpDataSource.Factory,
-    private var drmLicenseUrl: String
+    private var drmLicenseUrl: String?
 ): DrmSessionManagerProvider {
 
     override operator fun get(mediaItem: MediaItem): DrmSessionManager {
