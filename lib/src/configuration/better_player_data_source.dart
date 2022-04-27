@@ -65,7 +65,6 @@ class BetterPlayerDataSource {
 
   final String? authToken;
   final String? sessionToken;
-  final String? licenseUrl;
 
   ///Configuration of content protection
   final BetterPlayerDrmConfiguration? drmConfiguration;
@@ -102,7 +101,6 @@ class BetterPlayerDataSource {
     this.videoExtension,
     this.authToken,
     this.sessionToken,
-    this.licenseUrl,
     this.drmConfiguration,
     this.placeholder,
     this.bufferingConfiguration = const BetterPlayerBufferingConfiguration(),
@@ -155,8 +153,7 @@ class BetterPlayerDataSource {
       placeholder: placeholder,
       bufferingConfiguration: bufferingConfiguration,
       authToken: authToken,
-      sessionToken: sessionToken,
-      licenseUrl: licenseUrl
+      sessionToken: sessionToken
     );
   }
 
@@ -266,8 +263,7 @@ class BetterPlayerDataSource {
       bufferingConfiguration:
           bufferingConfiguration ?? this.bufferingConfiguration,
       authToken: authToken ?? this.authToken,
-      sessionToken: sessionToken ?? this.sessionToken,
-      licenseUrl: licenseUrl ?? this.licenseUrl,
+      sessionToken: sessionToken ?? this.sessionToken
     );
   }
 }

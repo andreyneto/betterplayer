@@ -97,7 +97,6 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
           'videoExtension': dataSource.videoExtension,
           'authToken': dataSource.authToken,
           'sessionToken': dataSource.sessionToken,
-          'licenseUrl': dataSource.licenseUrl
         };
         break;
       case DataSourceType.file:
