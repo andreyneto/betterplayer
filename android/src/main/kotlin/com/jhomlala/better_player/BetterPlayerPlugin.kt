@@ -148,7 +148,7 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     ) {
         when (call.method) {
             SET_DATA_SOURCE_METHOD -> {
-                setDataSource(call, result, player)
+                setBPDataSource(call, result, player)
             }
             SET_LOOPING_METHOD -> {
                 player.setLooping(call.argument(LOOPING_PARAMETER)!!)
@@ -291,6 +291,28 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
                 clearKey
             )
         }
+    }
+
+    private fun setBPDataSource(
+        call: MethodCall,
+        result: MethodChannel.Result,
+        player: BetterPlayer
+    ) {
+        val dataSource = call.argument<Map<String, Any?>>(DATA_SOURCE_PARAMETER)!!
+        dataSources.put(getTextureId(player)!!, dataSource)
+        val key = getParameter(dataSource, KEY_PARAMETER, "")
+        val uri = getParameter(dataSource, URI_PARAMETER, "")
+        val authToken = getParameter<String?>(dataSource, AUTH_TOKEN_PARAMETER, null)
+        val sessionToken = getParameter<String?>(dataSource, SESSION_TOKEN_PARAMETER, null)
+        val licenseUrl = getParameter<String?>(dataSource, LICENSE_URL_PARAMETER, null)
+        player.setBPDataSource(
+            flutterState!!.applicationContext,
+            key,
+            uri,
+            authToken,
+            sessionToken,
+            licenseUrl,
+            result)
     }
 
     /**
@@ -512,6 +534,8 @@ class BetterPlayerPlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         private const val DRM_HEADERS_PARAMETER = "drmHeaders"
         private const val DRM_CLEARKEY_PARAMETER = "clearKey"
         private const val MIX_WITH_OTHERS_PARAMETER = "mixWithOthers"
+        private const val SESSION_TOKEN_PARAMETER = "sessionToken"
+        private const val AUTH_TOKEN_PARAMETER = "authToken"
         const val URL_PARAMETER = "url"
         const val PRE_CACHE_SIZE_PARAMETER = "preCacheSize"
         const val MAX_CACHE_SIZE_PARAMETER = "maxCacheSize"

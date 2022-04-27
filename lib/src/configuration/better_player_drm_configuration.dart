@@ -7,6 +7,8 @@ class BetterPlayerDrmConfiguration {
 
   ///Parameter used only for token encrypted DRMs
   final String? token;
+  final String? authToken;
+  final String? sessionToken;
 
   ///Url of license server
   final String? licenseUrl;
@@ -23,6 +25,8 @@ class BetterPlayerDrmConfiguration {
   BetterPlayerDrmConfiguration(
       {this.drmType,
       this.token,
+      this.authToken,
+      this.sessionToken,
       this.licenseUrl,
       this.certificateUrl,
       this.headers,

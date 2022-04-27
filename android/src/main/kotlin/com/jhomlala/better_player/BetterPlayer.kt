@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -26,13 +25,11 @@ import com.google.android.exoplayer2.drm.DrmSessionManager
 import androidx.work.WorkManager
 import androidx.work.WorkInfo
 import com.google.android.exoplayer2.drm.HttpMediaDrmCallback
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager
 import com.google.android.exoplayer2.drm.FrameworkMediaDrm
 import com.google.android.exoplayer2.drm.UnsupportedDrmException
 import com.google.android.exoplayer2.drm.DummyExoMediaDrm
 import com.google.android.exoplayer2.drm.LocalMediaDrmCallback
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ClippingMediaSource
 import com.google.android.exoplayer2.ui.PlayerNotificationManager.MediaDescriptionAdapter
@@ -51,16 +48,21 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import io.flutter.plugin.common.EventChannel.EventSink
-import androidx.media.session.MediaButtonReceiver
 import androidx.work.Data
+import com.jhomlala.better_player.drm.CustomDrmHttpDataSource
+import com.jhomlala.better_player.drm.CustomDrmSessionManagerProvider
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.drm.DrmSessionManagerProvider
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import com.google.android.exoplayer2.source.dash.DashChunkSource
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride
 import com.google.android.exoplayer2.trackselection.TrackSelectionOverrides
 import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.exoplayer2.util.Util
 import java.io.File
 import java.lang.Exception
@@ -70,7 +72,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 internal class BetterPlayer(
-    context: Context,
+    private val context: Context,
     private val eventChannel: EventChannel,
     private val textureEntry: SurfaceTextureEntry,
     customDefaultLoadControl: CustomDefaultLoadControl?,
@@ -374,6 +376,69 @@ internal class BetterPlayer(
         bitmap = null
     }
 
+    fun setBPDataSource(
+        context: Context,
+        key: String?,
+        dataSource: String,
+        authToken: String?,
+        sessionToken: String?,
+        licenseUrl: String?,
+        result: MethodChannel.Result
+    ) {
+        this.key = key
+        isInitialized = false
+        val mediaSource = buildDashMediaSource(dataSource, authToken, sessionToken, licenseUrl)
+        exoPlayer?.setMediaSource(mediaSource)
+        exoPlayer?.prepare()
+        result.success(null)
+    }
+
+    private fun buildDashMediaSource(
+        url: String,
+        authToken: String?,
+        sessionToken: String?,
+        licenseUrl: String?
+    ): DashMediaSource {
+
+        val userAgent = "BPExoPlayer"
+
+        val defaultHttpDataSourceFactory = DefaultHttpDataSource.Factory()
+            .setUserAgent(userAgent)
+            .setTransferListener(
+                DefaultBandwidthMeter.Builder(context)
+                    .setResetOnNetworkTypeChange(false).build()
+            )
+
+        val dashChunkSourceFactory: DashChunkSource.Factory = DefaultDashChunkSource.Factory(defaultHttpDataSourceFactory)
+        val manifestDataSourceFactory = DefaultHttpDataSource.Factory().setUserAgent(userAgent)
+
+        val customHttpDrmDataSource = CustomDrmHttpDataSource.Factory()
+            .setUserAgent(userAgent)
+            .setAuthToken(authToken)
+            .setSessionToken(sessionToken)
+            .setTransferListener(
+                DefaultBandwidthMeter.Builder(context)
+                    .setResetOnNetworkTypeChange(false).build()
+            )
+
+        val customDrmSessionManagerProvider: DrmSessionManagerProvider =
+            CustomDrmSessionManagerProvider(
+                drmLicenseUrl = licenseUrl,
+                drmHttpDataSourceFactory = customHttpDrmDataSource
+            )
+
+        return DashMediaSource.Factory(dashChunkSourceFactory, manifestDataSourceFactory)
+            .setDrmSessionManagerProvider(customDrmSessionManagerProvider)
+            .createMediaSource(
+                MediaItem.Builder()
+                    .setUri(Uri.parse(url))
+                    .setMimeType(MimeTypes.APPLICATION_MPD)
+                    .setMediaId(url)
+                    .setTag(null)
+                    .build()
+            )
+    }
+
     private fun buildMediaSource(
         uri: Uri,
         mediaDataSourceFactory: DataSource.Factory,
@@ -482,7 +547,7 @@ internal class BetterPlayer(
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                eventSink.error("VideoError", "Video player had error $error", "")
+                eventSink.error("VideoError", "Video player had error ${error}", error.cause.toString())
             }
         })
         val reply: MutableMap<String, Any> = HashMap()

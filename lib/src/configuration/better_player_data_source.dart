@@ -63,6 +63,9 @@ class BetterPlayerDataSource {
   ///Extension of video without dot.
   final String? videoExtension;
 
+  final String? authToken;
+  final String? sessionToken;
+
   ///Configuration of content protection
   final BetterPlayerDrmConfiguration? drmConfiguration;
 
@@ -96,6 +99,8 @@ class BetterPlayerDataSource {
     this.overriddenDuration,
     this.videoFormat,
     this.videoExtension,
+    this.authToken,
+    this.sessionToken,
     this.drmConfiguration,
     this.placeholder,
     this.bufferingConfiguration = const BetterPlayerBufferingConfiguration(),
@@ -126,6 +131,9 @@ class BetterPlayerDataSource {
     Widget? placeholder,
     BetterPlayerBufferingConfiguration bufferingConfiguration =
         const BetterPlayerBufferingConfiguration(),
+    String? authToken,
+    String? sessionToken,
+    String? licenseUrl,
   }) {
     return BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
@@ -144,6 +152,8 @@ class BetterPlayerDataSource {
       drmConfiguration: drmConfiguration,
       placeholder: placeholder,
       bufferingConfiguration: bufferingConfiguration,
+      authToken: authToken,
+      sessionToken: sessionToken
     );
   }
 
@@ -227,6 +237,9 @@ class BetterPlayerDataSource {
     Widget? placeholder,
     BetterPlayerBufferingConfiguration? bufferingConfiguration =
         const BetterPlayerBufferingConfiguration(),
+    String? authToken,
+    String? sessionToken,
+    String? licenseUrl
   }) {
     return BetterPlayerDataSource(
       type ?? this.type,
@@ -249,6 +262,8 @@ class BetterPlayerDataSource {
       placeholder: placeholder ?? this.placeholder,
       bufferingConfiguration:
           bufferingConfiguration ?? this.bufferingConfiguration,
+      authToken: authToken ?? this.authToken,
+      sessionToken: sessionToken ?? this.sessionToken
     );
   }
 }
