@@ -48,18 +48,56 @@ open class CachingPlayerItem: AVPlayerItem {
         weak var owner: CachingPlayerItem?
         
         func resourceLoader(_ resourceLoader: AVAssetResourceLoader, shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
-            if playingFromData {
-                // Nothing to load.
-            } else if session == nil {
-                // If we're playing from a url, we need to download the file.
-                // We start loading the file on first request only.
-                guard let initialUrl = owner?.url else {
-                    fatalError("internal inconsistency")
-                }
-                startDataRequest( url: initialUrl)
-            }
-            pendingRequests.insert(loadingRequest)
-            processPendingRequests()
+//            if playingFromData {
+//                // Nothing to load.
+//            } else if session == nil {
+//                // If we're playing from a url, we need to download the file.
+//                // We start loading the file on first request only.
+//                guard let initialUrl = owner?.url else {
+//                    fatalError("internal inconsistency")
+//                }
+//                startDataRequest( url: initialUrl)
+//            }
+//            pendingRequests.insert(loadingRequest)
+//            processPendingRequests()
+            guard let url = loadingRequest.request.url else {
+                        print(#function, "Unable to read URL from loadingRequest")
+                        loadingRequest.finishLoading(with: NSError(domain: "", code: -1, userInfo: nil))
+                        return false
+                    }
+
+                    guard let certificateData = try? Data(contentsOf: URL(string: "https://fp-keyos.licensekeyserver.com/cert/321c04d199e238e7e08fb9893e7bae08.der")!) else {
+                        print(#function, "Unable to read the certificate data.")
+                        loadingRequest.finishLoading(with: NSError(domain: "", code: -2, userInfo: nil))
+                        return false
+                    }
+
+                    let contentId = url.host
+
+                    guard let contentIdData = contentId?.data(using: .utf8),
+                          let spcData = try? loadingRequest.streamingContentKeyRequestData(forApp: certificateData, contentIdentifier: contentIdData, options: nil) else {
+                        loadingRequest.finishLoading(with: NSError(domain: "", code: -3, userInfo: nil))
+                        print(#function, "Unable to read the SPC data.")
+//                        notifyError()
+                        return false
+                    }
+                
+                    let _stringBody = "spc=\(spcData.base64EncodedString())&assetId=\(contentId ?? "")"
+                    let encodedString = _stringBody.data(using: .utf8)?.base64EncodedString() ?? ""
+                    let userToken = "eyJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI2MDFhYWMzZGQzZjQ2OTAwMjZhNzlkZDYiLCJpYXQiOjE2NTA5MDgzMTk4NDYsImV4cCI6MTY1MDkwOTIxOTg0Nn0.fjU81y0Tsa_vIDODgGTypXc7ZNaIRB5Hlu8h_7KWzrQ"
+                    let sessionToken = "aa781824-a92d-430d-adfc-0e8ac58f83da"
+
+//                    guard let userToken = userToken, let sessionToken = sessionToken else {
+//                        loadingRequest.finishLoading()
+//                        notifyError()
+//                        return false
+//                    }
+                    
+                    Network.shared.getBinary(loadingRequest, userToken: userToken, sessionToken: sessionToken, body: encodedString) { data in
+                        let dataRequest = loadingRequest.dataRequest!
+                        dataRequest.respond(with: data)
+                        loadingRequest.finishLoading()
+                    }
             return true
         }
         
