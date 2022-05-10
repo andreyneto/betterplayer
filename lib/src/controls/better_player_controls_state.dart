@@ -527,4 +527,45 @@ abstract class BetterPlayerControlsState<T extends StatefulWidget>
       controlsNotVisible = notVisible;
     });
   }
+
+  late ChromeCastController chromeCastController;
+
+  Widget buildCastWidget(bool hideStuff) {
+    return AnimatedOpacity(
+      opacity: hideStuff ? 0.0 : 1.0,
+      duration: betterPlayerControlsConfiguration.controlsHideTime,
+      child: Container(
+        height: betterPlayerControlsConfiguration.controlBarHeight,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Stack(
+              children: [
+                ChromeCastButton(
+                  onButtonCreated: (controller) {
+                    print("ON button created!");
+                    chromeCastController = controller;
+                  },
+                ),
+                BetterPlayerMaterialClickableWidget(
+                  onTap: () {
+                    print("CLICKED ON CAST");
+                    betterPlayerController?.onCastClicked();
+                    chromeCastController.click();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      Icons.cast,
+                      color: betterPlayerControlsConfiguration.iconsColor,
+                    ),
+                  ),
+                )
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
 }

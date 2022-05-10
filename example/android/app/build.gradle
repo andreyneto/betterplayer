@@ -44,6 +44,7 @@ android {
         versionName flutterVersionName
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -60,4 +61,7 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     implementation "androidx.multidex:multidex:$multidexVersion"
+    //ChromeCast dependencies
+    implementation 'com.google.android.gms:play-services-cast-framework:15.0.0'
+    implementation 'com.google.android.exoplayer:extension-cast:2.9.6'
 }

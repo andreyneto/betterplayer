@@ -210,6 +210,8 @@ class BetterPlayerController {
   ///Currently displayed [BetterPlayerSubtitle].
   BetterPlayerSubtitle? renderedSubtitle;
 
+  bool _wasInCastMode = false;
+
   BetterPlayerController(
     this.betterPlayerConfiguration, {
     this.betterPlayerPlaylistConfiguration,
@@ -793,6 +795,12 @@ class BetterPlayerController {
         setControlsEnabled(true);
       }
       videoPlayerController?.refresh();
+    } else if (currentVideoPlayerValue.isCastSessionAvailable && !_wasInCastMode){
+      _wasInCastMode = true;
+      videoPlayerController?.enableCast();
+    } else if (!currentVideoPlayerValue.isCastSessionAvailable && _wasInCastMode){
+      _wasInCastMode = false;
+      videoPlayerController?.disableCast();
     }
 
     if (_betterPlayerSubtitlesSource?.asmsIsSegmented == true) {
@@ -933,6 +941,11 @@ class BetterPlayerController {
     }
     _postEvent(
         BetterPlayerEvent(BetterPlayerEventType.changedPlayerVisibility));
+    if (_wasInCastMode){
+      print("Disabled cast because is no longer visible!!");
+      disableCast();
+      _wasInCastMode = false;
+    }
 
     if (_isAutomaticPlayPauseHandled()) {
       if (betterPlayerConfiguration.playerVisibilityChangedBehavior != null) {
@@ -1271,6 +1284,18 @@ class BetterPlayerController {
   void setBetterPlayerControlsConfiguration(
       BetterPlayerControlsConfiguration betterPlayerControlsConfiguration) {
     this._betterPlayerControlsConfiguration = betterPlayerControlsConfiguration;
+  }
+
+  void enableCast() async{
+    return videoPlayerController?.enableCast();
+  }
+
+  void disableCast() async{
+    return videoPlayerController?.disableCast();
+  }
+
+  void onCastClicked(){
+    return videoPlayerController?.startCast();
   }
 
   /// Add controller internal event.

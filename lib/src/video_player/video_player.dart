@@ -33,6 +33,7 @@ class VideoPlayerValue {
     this.speed = 1.0,
     this.errorDescription,
     this.isPip = false,
+    this.isCastSessionAvailable = false,
   });
 
   /// Returns an instance with a `null` [Duration].
@@ -87,6 +88,8 @@ class VideoPlayerValue {
   ///Is in Picture in Picture Mode
   final bool isPip;
 
+  final bool isCastSessionAvailable;
+
   /// Indicates whether or not the video has been loaded and is ready to play.
   bool get initialized => duration != null;
 
@@ -122,6 +125,7 @@ class VideoPlayerValue {
     String? errorDescription,
     double? speed,
     bool? isPip,
+    bool? isCastSessionAvailable,
   }) {
     return VideoPlayerValue(
       duration: duration ?? this.duration,
@@ -136,6 +140,8 @@ class VideoPlayerValue {
       speed: speed ?? this.speed,
       errorDescription: errorDescription ?? this.errorDescription,
       isPip: isPip ?? this.isPip,
+      isCastSessionAvailable:
+          isCastSessionAvailable ?? this.isCastSessionAvailable,
     );
   }
 
@@ -251,6 +257,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           break;
         case VideoEventType.pipStop:
           value = value.copyWith(isPip: false);
+          break;
+        case VideoEventType.castSessionAvailable:
+          value = value.copyWith(isCastSessionAvailable: true);
+          break;
+        case VideoEventType.castSessionUnavailable:
+          value = value.copyWith(isCastSessionAvailable: false);
           break;
         case VideoEventType.unknown:
           break;
@@ -639,6 +651,18 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   static Future stopPreCache(String url, String? cacheKey) async {
     return _videoPlayerPlatform.stopPreCache(url, cacheKey);
+  }
+
+  void startCast() async {
+    return _videoPlayerPlatform.startCast(_textureId);
+  }
+
+  void enableCast() async {
+    return _videoPlayerPlatform.enableCast(_textureId);
+  }
+
+  void disableCast() async {
+    return _videoPlayerPlatform.disableCast(_textureId);
   }
 }
 

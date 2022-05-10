@@ -466,6 +466,10 @@ bool _remoteCommandsInitialized = false;
                 }
             }
             result(nil);
+        } else if ([@"enableCast" isEqualToString:call.method]){
+            [player addAirPlayButton];
+        } else if ([@"disableCast" isEqualToString:call.method]){
+            [player removeAirPlayButton];
         } else {
             result(FlutterMethodNotImplemented);
         }
